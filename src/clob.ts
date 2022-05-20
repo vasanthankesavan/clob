@@ -11,6 +11,7 @@ import { timestampFactory } from "./util/timestamp-factory";
 import { Trade } from "./types/trade";
 import { NotYetImplementedError } from "./util/not-yet-implemented-error";
 import { SIDE_BUY, SIDE_SELL } from "./types/side";
+import { PriceLevel } from "./types/price-level-schema";
 
 /** Single-ticket CLOB order book and trade execution engine */
 export class Clob {
@@ -29,8 +30,48 @@ export class Clob {
   /** Aggregate open orders into publicly-available price levels */
   getAggregatedBook(): AggregatedBook {
     this.logger.debug("Getting aggregated book");
-    throw new NotYetImplementedError();
+    const asks: PriceLevel[] = [];
+    const bids: PriceLevel[] = [];
+
+    const askLevels: Record<number, number> = {};
+    const bidLevels: Record<number, number> = {};
+
+    for (const key in this._buyOrders) {
+      const price = this._buyOrders[key].price;
+      const quantity = this._buyOrders[key].quantity;
+
+      if (price in bidLevels) {
+        bidLevels[price] = bidLevels[price] + quantity;
+      } else {
+        bidLevels[price] = quantity;
+      }
+    }
+
+    for (const key in bidLevels) {
+      const priceLevel: PriceLevel = { price: Number(key), quantity: bidLevels[key] };
+      bids.push(priceLevel);
+    }
+
+    for (const key in this._sellOrders) {
+      const price = this._sellOrders[key].price;
+      const quantity = this._sellOrders[key].quantity;
+
+      if (price in askLevels) {
+        askLevels[price] = askLevels[price] + quantity;
+      } else {
+        askLevels[price] = quantity;
+      }
+    }
+
+    for (const key in askLevels) {
+      const priceLevel: PriceLevel = { price: Number(key), quantity: askLevels[key] };
+      asks.push(priceLevel);
+    }
+
+    return { asks, bids };
   }
+
+
 
   /** Handle an order request placed by a trader
    * @param input Order event
