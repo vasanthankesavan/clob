@@ -74,40 +74,94 @@ export class Clob {
     return this._trades[tradeId];
   }
 
+  checkIfTradeEligible(order: Order): boolean {
+    if (order.side === SIDE_BUY) {
+      const price = order.price;
+
+      for (const key in this._sellOrders) {
+        if (this._sellOrders[key].price <= price) {
+          return true
+        }
+      }
+
+      return false;
+    } else {
+      const price = order.price;
+
+      for (const key in this._buyOrders) {
+        if (this._buyOrders[key].price >= price) {
+          return true
+        }
+      }
+
+      return false;
+    }
+  }
+
   executeOrder(order: Order): void {
+    const checkIfEligible = this.checkIfTradeEligible(order);
     // Buy Order
     // Execute the order based on lowest price
-    if (order.side === SIDE_BUY) {
-      const eligibleAsk = this.getLowestSellOrder();
+    if (checkIfEligible) {
+      if (order.side === SIDE_BUY) {
+        const eligibleAsk = this.getLowestSellOrder();
+  
+        if (eligibleAsk) {
+          const remaining = order.quantity - this._sellOrders[eligibleAsk.id].quantity;
+          const executed = order.quantity - remaining;
 
-      if (eligibleAsk) {
-        const remaining = order.quantity - this._sellOrders[eligibleAsk.id].quantity;
-        const executed = order.quantity - remaining;
-        this._buyOrders[order.id].quantityRemaining = remaining;
-        this._sellOrders[eligibleAsk.id].quantityRemaining = remaining;
-
-        const tradeId = idFactory();
-        this.generateTrade(tradeId, executed, order, eligibleAsk, eligibleAsk.price);
-
-        order.tradeIds.push(tradeId);
-        this._sellOrders[eligibleAsk.id].tradeIds.push(tradeId);
-      }
-    } else {
-      const eligibleBid = this.getHighestBidOrder();
-
-      if (eligibleBid) {
-        const remaining = order.quantity - this._buyOrders[eligibleBid.id].quantity;
-        const executed = order.quantity - remaining;
-        this._sellOrders[order.id].quantityRemaining = remaining;
-        this._buyOrders[eligibleBid.id].quantityRemaining = remaining;
-
-        const tradeId = idFactory();
-        this.generateTrade(tradeId, executed, eligibleBid, order, eligibleBid.price);
-
-        order.tradeIds.push(tradeId);
-        this._buyOrders[eligibleBid.id].tradeIds.push(tradeId);
+          if (remaining > 0) {
+            this._buyOrders[order.id].quantityRemaining = remaining;
+            this._sellOrders[eligibleAsk.id].quantityRemaining = 0;
+          } else {
+            this._buyOrders[order.id].quantityRemaining = remaining;
+            this._sellOrders[eligibleAsk.id].quantityRemaining = remaining;
+          }
+  
+          const tradeId = idFactory();
+          let tradePrice: number;
+          if(order.price !== eligibleAsk.price) {
+            tradePrice = order.price;
+          } else {
+            tradePrice = order.price;
+          }
+        
+          this.generateTrade(tradeId, executed, order, eligibleAsk, tradePrice);
+  
+          order.tradeIds.push(tradeId);
+          this._sellOrders[eligibleAsk.id].tradeIds.push(tradeId);
+        }
+      } else {
+        const eligibleBid = this.getHighestBidOrder();
+  
+        if (eligibleBid) {
+          const remaining = order.quantity - this._buyOrders[eligibleBid.id].quantity;
+          const executed = order.quantity - remaining;
+          
+          if (remaining > 0) {
+            this._sellOrders[order.id].quantityRemaining = remaining;
+            this._buyOrders[eligibleBid.id].quantityRemaining = 0;
+          } else {
+            this._sellOrders[order.id].quantityRemaining = remaining;
+            this._buyOrders[eligibleBid.id].quantityRemaining = remaining;
+          }
+          
+          const tradeId = idFactory();
+          let tradePrice: number;
+          if(order.price !== eligibleBid.price) {
+            tradePrice = eligibleBid.price;
+          } else {
+            tradePrice = order.price;
+          }
+  
+          this.generateTrade(tradeId, executed, eligibleBid, order, tradePrice);
+  
+          order.tradeIds.push(tradeId);
+          this._buyOrders[eligibleBid.id].tradeIds.push(tradeId);
+        }
       }
     }
+    
   }
 
   getLowestSellOrder(): Order | undefined {

@@ -55,7 +55,7 @@ describe(`${Clob.name}#${Clob.prototype.createOneOrder.name}`, () => {
     expect(trade.sellOrderId).toBe(sellOrder.id);
   });
 
-  it.skip("executes a trade at the maker price if the order prices are different but overlapping", () => {
+  it("executes a trade at the maker price if the order prices are different but overlapping", () => {
     const clob = new Clob();
     const price = 100;
     const quantity = 225;
@@ -76,7 +76,7 @@ describe(`${Clob.name}#${Clob.prototype.createOneOrder.name}`, () => {
     expect(trade.price).toBe(buyOrder.price);
   });
 
-  it.skip("does not execute trades if there is no overlap in price", () => {
+  it("does not execute trades if there is no overlap in price", () => {
     const clob = new Clob();
     const buyOrder = clob.createOneOrder({
       side: SIDE_BUY,
@@ -96,7 +96,7 @@ describe(`${Clob.name}#${Clob.prototype.createOneOrder.name}`, () => {
     expect(buyOrder.quantityRemaining).toBe(buyOrder.quantity);
   });
 
-  it.skip("executes a trade for a partial quantity if the order quantities are different", () => {
+  it("executes a trade for a partial quantity if the order quantities are different", () => {
     const clob = new Clob();
     const sellOrderExcessQuantity = 25;
     const price = 100;
