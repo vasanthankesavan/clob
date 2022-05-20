@@ -14,6 +14,7 @@ import { NotYetImplementedError } from "./util/not-yet-implemented-error";
 /** Single-ticket CLOB order book and trade execution engine */
 export class Clob {
   private readonly logger = new Logger(Clob.name);
+  private _orders: Record<string, Order> = {};
 
   public constructor() {
     this.logger.debug("Instantiating");
@@ -44,13 +45,15 @@ export class Clob {
       trader: input.trader,
       tradeIds: [],
     };
-    throw new NotYetImplementedError();
+
+    this._orders[id] = _order;
+    return _order;
   }
 
   /** Load an order by its id */
   getOneOrder(orderId: string): Order {
     this.logger.debug(`Loading order with id=${orderId}`);
-    throw new NotYetImplementedError();
+    return this._orders[orderId];
   }
 
   /** Load a trade by its id */

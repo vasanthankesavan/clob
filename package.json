@@ -13,11 +13,11 @@
     "lint": "eslint --ext .js,.jsx,.ts,.tsx src jest.config.js",
     "lint:fix": "npm run lint -- --fix",
     "start": "ts-node start/index.ts",
-    "start:prod": "NODE_ENV=production node lib/index.js",
+    "start:prod": "set NODE_ENV=production && node lib/index.js",
     "start:watch": "nodemon --exec ts-node --ext ts src/index.ts",
     "tar2zip": "tar2zip",
     "test": "npm run lint && npm run unit-test && npm run build",
-    "unit-test": "NODE_ENV=test jest src",
+    "unit-test": "set NODE_ENV=test && jest src",
     "unit-test:watch": "npm run unit-test -- --watch"
   },
   "dependencies": {
