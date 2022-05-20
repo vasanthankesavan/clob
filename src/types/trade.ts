@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const tradeSchema = z.object({
   /** Unique identifier for this trade */
-  id: z.number(),
+  id: z.string(),
   /** Price of this trade */
   price: z.number(),
   /** Quantity of this trade */
