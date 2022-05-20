@@ -12,7 +12,7 @@ export const orderSchema = orderInputSchema.extend({
   /** Unique IDs of the trades executed on this order */
   tradeIds: z.array(z.string()),
   /** Order count to keep track of old order */
-  orderCount: z.number()
+  orderCount: z.number(),
 });
 
 export type Order = z.infer<typeof orderSchema>;
